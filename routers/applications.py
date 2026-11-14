@@ -21,7 +21,7 @@ class UpdateApplication(BaseModel):
 
 applications = []
 
-@router.post("/applications",status_code = 201)
+@router.post("",status_code = 201)
 def create_application (application : Application):
     for current_application in applications:
         if current_application.id == application.id:
@@ -32,7 +32,7 @@ def create_application (application : Application):
     applications.append(application)
     return application
 
-@router.get("/applications")
+@router.get("")
 def get_applications(status : ApplicationStatus | None = None, company : str | None = None ):
     result = applications
     if status is not None:
@@ -45,7 +45,7 @@ def get_applications(status : ApplicationStatus | None = None, company : str | N
     if company is not None:
         filtered = []
         for application in result:
-            if application.lower() == company.lower():
+            if application.company.lower() == company.lower():
                 filtered.append(application)
         result = filtered
         
@@ -53,7 +53,7 @@ def get_applications(status : ApplicationStatus | None = None, company : str | N
 
    
 
-@router.get("/applications/{application_id}")
+@router.get("/{application_id}")
 def get_application_by_id(application_id : int):
     for application in applications:
         if application_id == application.id:
@@ -64,7 +64,7 @@ def get_application_by_id(application_id : int):
         detail = "msg: application not found"
     )
 
-@router.patch("/applications/{application_id}")
+@router.patch("/{application_id}")
 def update_application(update : UpdateApplication, application_id : int):
     for application in applications:
         if application.id == application_id:
@@ -78,7 +78,7 @@ def update_application(update : UpdateApplication, application_id : int):
             detail = "msg: application not found"
         )
 
-@router.delete("/applications/{application_id}", status_code=204)
+@router.delete("/{application_id}", status_code=204)
 def delete_application(application_id : int):
     for application in applications:
         if application.id == application_id:

@@ -1,6 +1,4 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from fastapi import FastAPI
 from routers import applications
 
 app = FastAPI()
