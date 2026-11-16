@@ -1,9 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 
-router=APIRouter(prefix="/applications")
+from sqlalchemy.orm import Session
+from sqlalchemy import select,join, func
+from database import get_db
+from models import ApplicationDB, CompanyDB
 
+router=APIRouter(prefix="/applications")
 
 ApplicationStatus = Literal["applied", "interview", "rejected"]
 
@@ -19,8 +23,6 @@ class UpdateApplication(BaseModel):
     role : Optional[str] = Field(default=None, min_length=1)
     status : ApplicationStatus | None = None
 
-applications = []
-
 @router.post("",status_code = 201)
 def create_application (application : Application):
     for current_application in applications:
@@ -32,24 +34,28 @@ def create_application (application : Application):
     applications.append(application)
     return application
 
-@router.get("")
-def get_applications(status : ApplicationStatus | None = None, company : str | None = None ):
-    result = applications
-    if status is not None:
-        filtered = []
-        for application in result:
-            if application.status == status:
-                filtered.append(application)
-        result = filtered
+@router.get("",response_model=list[Application])
+def get_applications(status : ApplicationStatus | None = None, company : str | None = None, session: Session=Depends(get_db)):
+    statement = select(ApplicationDB)
 
-    if company is not None:
-        filtered = []
-        for application in result:
-            if application.company.lower() == company.lower():
-                filtered.append(application)
-        result = filtered
+    if status is not None:
+        statement = statement.where(ApplicationDB.status == status)
         
-    return result
+    if company is not None:
+        statement = statement.join(ApplicationDB.company).where(func.lower(CompanyDB.name)==company.lower())
+    
+    result = session.scalars(statement).all()
+
+    responses = []
+    for application in result:
+        response = Application(
+            id=application.id,
+            company=application.company.name,
+            role=application.role,
+            status=application.status
+            )
+        responses.append(response)
+    return responses
 
    
 
