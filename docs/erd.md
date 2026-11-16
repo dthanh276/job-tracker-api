@@ -1,21 +1,23 @@
+```mermaid
 erDiagram
     companies ||..o{ applications : has
     applications ||..o{ notes : has
 
-    companies{
+    companies {
         int id PK
-        string name UK 
+        string name UK
     }
 
-    applications{
+    applications {
         int id PK
         int company_id FK
         string role
         string status
     }
 
-    notes{
+    notes {
         int id PK
         int application_id FK
         string content
     }
+```
